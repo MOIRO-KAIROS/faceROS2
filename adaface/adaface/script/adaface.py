@@ -5,28 +5,27 @@ from face_alignment import align
 import numpy as np
 import cv2
 from PIL import Image
-
+import argparse
 import sys
 import time
 
-# sys_path = os.path.dirname(__file__)
-sys_path = "/home/minha/moiro_ws/src/faceROS2/adaface/adaface/script"
+sys_path = os.path.dirname(__file__)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_grad_enabled(False) # for 메모리
 
 adaface_models = {
-    'ir_50': os.path.join(sys_path, "pretrained/adaface_ir50_ms1mv2.ckpt"),
+    "ir_50": os.path.join(sys_path, "pretrained/adaface_ir50_ms1mv2.ckpt"),
 }
 
 def load_pretrained_model(architecture='ir_50'):
-    # load model and pretrained statedict
-    assert architecture in adaface_models.keys()
-    model = net.build_model(architecture)
-    statedict = torch.load(adaface_models[architecture])['state_dict']
-    model_statedict = {key[6:]:val for key, val in statedict.items() if key.startswith('model.')}
-    model.load_state_dict(model_statedict)
-    model.eval()
-    return model
+        # load model and pretrained statedict
+        assert architecture in adaface_models.keys()
+        model = net.build_model(architecture)
+        statedict = torch.load(adaface_models[architecture])['state_dict']
+        model_statedict = {key[6:]:val for key, val in statedict.items() if key.startswith('model.')}
+        model.load_state_dict(model_statedict)
+        model.eval()
+        return model
 
 def to_input(pil_rgb_image, RGB=False):
     np_img = np.array(pil_rgb_image)
@@ -89,10 +88,8 @@ class AdaFace():
             bgr_tensor_input = to_input(aligned_rgb_img)
             feature, _ = self.model(bgr_tensor_input)
 
-            # features[fname.split('.')[0]] = feature
             features.append(feature)
             ids.append(fname.split('.')[0])
-        # print(features)
         
         if not os.path.exists('embed'):
             os.makedirs('embed')
@@ -133,10 +130,10 @@ class AdaFace():
             # face_names = [known_face_names[idx] for idx in best_match_index] # threshold 없는 경우 ('unkown' 처리 안한 경우)
             # end_time = time.time() # 연산에 대한 실행 시간(end) check
             # print("Execution Time:", (end_time - start_time), "sec") # 실행 시간 0.0003 ~
-        
+
         return bboxes, face_names
 
-    def run_video(self): 
+    def run_video(self):
         video_capture = cv2.VideoCapture(self.video) # os.path.join(sys_path, "video/iAM.mp4"
         while True:
             # Grab a single frame of video
@@ -169,6 +166,13 @@ class AdaFace():
         video_capture.release()
         cv2.destroyAllWindows()
 
-
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', type=int, default=1, help='0: 임베딩 저장 1: webcam/video으로 run_video)')
+    parser.add_argument('--video', type=str, default='0', help='0: webcam 또는 "video/iAM.mp4" 특정 비디오 path 경로')
+    parser.add_argument('--fr_weight', type=str, default='ir_50', help='face recognition weight')
+    parser.add_argument('--thresh', nargs='+', type=str, default=.2, help='unknown confidence < .2')
+    parser.add_argument('--max_obj', type=int, default=6, help='detect 가능한 최대 얼굴의 개수')
+    parser.add_argument('--dataset', type=str, default='face_dataset/test', help='face dataset의 경로 (known face dataset)')
     
+    opt = parser.parse_args()

@@ -12,12 +12,12 @@ from cv_bridge import CvBridge
 from yolov8_msgs.msg import Detection
 from yolov8_msgs.msg import DetectionArray
 from sensor_msgs.msg._image import Image
-# from visualization_msgs.msg import Marker
-# from visualization_msgs.msg import MarkerArray
+
 import sys
-sys.path.append("/home/minha/moiro_ws/src/faceROS2/adaface/adaface/script")
-# /home/minha/moiro_ws/src/faceROS2/adaface/adaface/adaface_ros2.py
-from adaface.script.adaface  import AdaFace
+sys.path.append("/home/lee52/ros2_ws/src/minhaROS/adaface/adaface/script")
+
+from adaface.script.adaface import AdaFace
+
 '''
 This Node subscribes datas from ~yolo/tracking_node~, publish data to ~yolo/debug_node~
 '''
@@ -29,9 +29,10 @@ class Adaface(Node):
     self.get_logger().info('Start face recognition!')
     self.get_logger().info('========================') 
 
+    self._class_to_color = {}
     self.cv_bridge = CvBridge()
     
-     # params
+    # params
     self.declare_parameter("fr_weight", "ir_50")
     model = self.get_parameter("fr_weight").get_parameter_value().string_value
 
@@ -62,26 +63,8 @@ class Adaface(Node):
         durability=QoSDurabilityPolicy.VOLATILE,
         depth=1
     )
-    # self.declare_parameter("input_image_topic", "/camera/camera/color/image_raw")
-    # self.input_image_topic = self.get_parameter(
-    #         "input_image_topic").get_parameter_value().string_value
-    
-    # self.declare_parameter("image_reliability",
-    #                         QoSReliabilityPolicy.BEST_EFFORT)
-    # image_qos_profile = QoSProfile(
-    #     reliability=self.get_parameter(
-    #         "image_reliability").get_parameter_value().integer_value,
-    #     history=QoSHistoryPolicy.KEEP_LAST,
-    #     durability=QoSDurabilityPolicy.VOLATILE,
-    #     depth=1
-    # )
-    image_qos_profile = QoSProfile(
-        reliability=self.get_parameter(
-            "image_reliability").get_parameter_value().integer_value,
-        history=QoSHistoryPolicy.KEEP_LAST,
-        durability=QoSDurabilityPolicy.VOLATILE,
-        depth=1
-    )
+
+    self.cv_bridge = CvBridge()
     self.adaface = AdaFace(
         model=model,
         option=option,
@@ -90,16 +73,17 @@ class Adaface(Node):
         max_obj=self.max_obj,
         thresh=self.thresh,
     )
-
+    
+    self.get_logger().info('Adaface load suceess...')
     #pubs
     self._adaface_pub = self.create_publisher(DetectionArray, 'adaface_msg',10)
 
     ## subs
     # 이미지와 message를 subscribe
     tracking_sub = message_filters.Subscriber(
-        self, DetectionArray, "detections", qos_profile =10)
+        self, DetectionArray, "/yolo/tracking", qos_profile =10)
     image_sub = message_filters.Subscriber(
-        self, Image, "image_raw", qos_profile=image_qos_profile)
+        self, Image, "/camera/camera/color/image_raw", qos_profile=image_qos_profile)
 
     
     # 이미지와 message를 동기화
@@ -143,7 +127,7 @@ class Adaface(Node):
             self.get_logger().info('center | x : {}, y : {}, Person Name | {}'.format(face_id_msg.bbox.center.position.x ,face_id_msg.bbox.center.position.y ,face_id_msg.id)) # For Debugging
             self.get_logger().info('===============================================================')
         # publish face information (id,bbox)
-        # self.get_logger().info('Publish data')
+        self.get_logger().info('Publish data')
         self._adaface_pub.publish(face_ids_for_frame)
 
 def main(args=None): 
