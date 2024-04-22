@@ -115,7 +115,6 @@ def generate_launch_description():
     ld.add_action(adaface_node_cmd)
 
     return ld
-
     # return LaunchDescription([
         
     #       # realsense package launch
