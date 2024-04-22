@@ -1,13 +1,13 @@
 import sys
 import os
 
-from .mtcnn import *
+from face_alignment import mtcnn
 import argparse
 from PIL import Image
 from tqdm import tqdm
 import random
 from datetime import datetime
-mtcnn_model = MTCNN(device='cuda:0', crop_size=(112, 112))
+mtcnn_model = mtcnn.MTCNN(device='cuda:0', crop_size=(112, 112))
 
 def add_padding(pil_img, top, right, bottom, left, color=(0,0,0)):
     width, height = pil_img.size

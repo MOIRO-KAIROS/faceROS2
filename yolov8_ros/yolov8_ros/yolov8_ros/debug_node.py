@@ -74,7 +74,7 @@ class DebugNode(Node):
             self, DetectionArray, "detections", qos_profile=10)
         ###
         face_sub = message_filters.Subscriber(
-            self, DetectionArray, "/adaface_msg",qos_profile=10)
+            self, DetectionArray, "/adaface/adaface_msg",qos_profile=10)
         ###
         self._synchronizer = message_filters.ApproximateTimeSynchronizer(
             (image_sub, detections_sub,face_sub), 10, 0.5)

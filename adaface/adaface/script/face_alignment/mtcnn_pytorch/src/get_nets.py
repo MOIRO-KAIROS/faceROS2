@@ -1,4 +1,3 @@
-import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -36,7 +35,7 @@ class PNet(nn.Module):
         # after pool: ceil((H - 2)/2),
         # after second conv: ceil((H - 2)/2) - 2,
         # after last conv: ceil((H - 2)/2) - 4,
-        # and the same for W  
+        # and the same for W
 
         self.features = nn.Sequential(OrderedDict([
             ('conv1', nn.Conv2d(3, 10, 3, 1)),
@@ -52,7 +51,8 @@ class PNet(nn.Module):
 
         self.conv4_1 = nn.Conv2d(32, 2, 1, 1)
         self.conv4_2 = nn.Conv2d(32, 4, 1, 1)
-        weights = np.load('/home/minha/moiro_ws/src/faceROS2/adaface/adaface/script/face_alignment/mtcnn_pytorch/src/weights/pnet.npy', allow_pickle=True)[()]
+
+        weights = np.load('mtcnn_pytorch/src/weights/pnet.npy', allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
 
@@ -96,8 +96,8 @@ class RNet(nn.Module):
 
         self.conv5_1 = nn.Linear(128, 2)
         self.conv5_2 = nn.Linear(128, 4)
-        weights = np.load('/home/minha/moiro_ws/src/faceROS2/adaface/adaface/script/face_alignment/mtcnn_pytorch/src/weights/rnet.npy', allow_pickle=True)[()]
-        
+
+        weights = np.load('mtcnn_pytorch/src/weights/rnet.npy', allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
 
@@ -147,8 +147,8 @@ class ONet(nn.Module):
         self.conv6_1 = nn.Linear(256, 2)
         self.conv6_2 = nn.Linear(256, 4)
         self.conv6_3 = nn.Linear(256, 10)
-        weights = np.load('/home/minha/moiro_ws/src/faceROS2/adaface/adaface/script/face_alignment/mtcnn_pytorch/src/weights/onet.npy', allow_pickle=True)[()]
-        # weights = np.load('mtcnn_pytorch/src/weights/onet.npy', allow_pickle=True)[()]
+
+        weights = np.load('mtcnn_pytorch/src/weights/onet.npy', allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
 
