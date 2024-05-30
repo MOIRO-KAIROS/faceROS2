@@ -22,9 +22,6 @@ class WorldNode(Node):
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
         self.cv_bridge = CvBridge()
 
-        self.x = 0.0
-        self.y = 0.0
-        self.z = 0.0
         self.status = False
         
         self.person_broadcaster = tf2_ros.TransformBroadcaster(self)
@@ -65,14 +62,15 @@ class WorldNode(Node):
 
     def target_setting(self,req:TargetPose.Request, res: TargetPose.Response) -> TargetPose.Response:
         # self.get_logger().info(f'{req.prepared}')
-        # if req.prepared == True:
-            res.x = self.x
-            res.y = self.y
-            res.z = self.z
+        if self.status == True:
+            plate_tf = self.tf_buffer.lookup_transform('base_plate', 'person_link', rclpy.time.Time())
+            res.x = float("{:.3f}".format(plate_tf.transform.translation.x))
+            res.y = float("{:.3f}".format(plate_tf.transform.translation.y))
+            res.z = float("{:.3f}".format(plate_tf.transform.translation.z))
             res.w = 1.0
             res.status = self.status
-            self.get_logger().info('\033[93m Sending: x : {}  y:  {}  z: {} w: 1.0\033[0m'.format(self.x,self.y,self.z))
-            return res
+            self.get_logger().info('\033[93m Sending: x : {}  y:  {}  z: {} w: 1.0\033[0m'.format(res.x,res.y,res.z)) 
+        return res
 
     def person_setting(self, req: Person.Request, res: Person.Response ) -> Person.Response:
         self.person_name = req.person_name
@@ -136,7 +134,6 @@ class WorldNode(Node):
 
                 # Transform camera coordinates to world coordinates
                 object_position_camera_frame = camera_coords
-                self.get_logger().info('\033[93m camera_position : {} \033[0m'.format(camera_position)) 
                 object_position_world_frame = np.dot(R, object_position_camera_frame) + camera_position
 
                 transform_stamped = TransformStamped()
@@ -144,21 +141,21 @@ class WorldNode(Node):
                 transform_stamped.header.frame_id = 'camera_color_frame'
                 transform_stamped.child_frame_id = 'person_link'
                 
-                self.x = float("{:.3f}".format(object_position_world_frame[2] / 1000.0))
-                self.y =  float("{:.3f}".format(object_position_world_frame[0] / 1000.0))
-                self.z = float("{:.3f}".format(object_position_world_frame[1] / 1000.0))
+                # self.x = float("{:.3f}".format(object_position_world_frame[2] / 1000.0))
+                # self.y =  float("{:.3f}".format(object_position_world_frame[0] / 1000.0))
+                # self.z = float("{:.3f}".format(object_position_world_frame[1] / 1000.0))
                 
                 # For debugging
-                transform_stamped.transform.translation.x = self.x 
-                transform_stamped.transform.translation.y =  self.y 
-                transform_stamped.transform.translation.z = self.z 
+                transform_stamped.transform.translation.x = float("{:.3f}".format(object_position_world_frame[2] / 1000.0))
+                transform_stamped.transform.translation.y = float("{:.3f}".format(object_position_world_frame[0] / 1000.0)) 
+                transform_stamped.transform.translation.z = float("{:.3f}".format(object_position_world_frame[1] / 1000.0))
                 
                 transform_stamped.transform.rotation.x = 0.0
                 transform_stamped.transform.rotation.y = 0.240207
                 transform_stamped.transform.rotation.z = 0.0
                 transform_stamped.transform.rotation.w = 0.74556
                 self.person_broadcaster.sendTransform(transform_stamped)
-                self.get_logger().info('\033[93m depth {} : x:{} | y:{} | z:{}\033[0m'.format(depth, self.x, self.y, self.z))
+                # self.get_logger().info('\033[93m depth {} : x:{} | y:{} | z:{}\033[0m'.format(depth, self.x, self.y, self.z))
 
             except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
                 self.get_logger().error(f"Failed to lookup transform: {e}")
