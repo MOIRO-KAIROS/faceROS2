@@ -20,8 +20,11 @@ from sensor_msgs.msg._image import Image
 import numpy as np
 import sys
 import os
+from ament_index_python.packages import get_package_share_directory
 
-sys.path.append(os.path.join(os.path.expanduser("~"), "moiro_ws/src/moiro_vision/adaface_ros/adaface_ros/script"))
+# get package share example : /home/minha/moiro_ws/install/adaface_ros/lib/adaface_ros/
+package_path = os.path.abspath(os.path.join(get_package_share_directory('adaface_ros'), "../../../../"))
+sys.path.append(os.path.join(package_path, "src/moiro_vision/adaface_ros/adaface_ros/script"))
 
 from adaface_ros.script.adaface  import AdaFace
 

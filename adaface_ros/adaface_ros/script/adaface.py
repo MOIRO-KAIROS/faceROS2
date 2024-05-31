@@ -6,10 +6,16 @@ import numpy as np
 import cv2
 from PIL import Image
 
-import sys
-import time
+import sys, time
+from ament_index_python.packages import get_package_share_directory
 
-sys_path = os.path.join(os.path.expanduser("~"), "moiro_ws/src/moiro_vision/adaface_ros/adaface_ros/script")
+# sys_path = os.path.join(os.path.expanduser("~"), "moiro_ws/src/moiro_vision/adaface_ros/adaface_ros/script")
+
+## get package share example : /home/minha/moiro_ws/install/adaface_ros/lib/adaface_ros/
+package_path = os.path.abspath(os.path.join(get_package_share_directory('adaface_ros'), "../../../../"))
+sys_path = os.path.join(package_path, "src/moiro_vision/adaface_ros/adaface_ros/script")
+
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.set_grad_enabled(False) # for 메모리
 

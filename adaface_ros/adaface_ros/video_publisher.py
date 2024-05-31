@@ -1,14 +1,16 @@
 import rclpy
 from rclpy.node import Node
 import cv2
-import time
+import time, os
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+from ament_index_python.packages import get_package_share_directory
 
 class ImagePublisher(Node):
     def __init__(self):
         super().__init__("image_publisher")
-        file_path = '/home/minha/moiro_ws/src/moiro_vision/adaface_ros/adaface_ros/script/video/iAM.mp4'
+        package_path = os.path.abspath(os.path.join(get_package_share_directory('adaface_ros'), "../../../../"))
+        file_path = os.path.join(package_path,'src/moiro_vision/adaface_ros/adaface_ros/script/video/iAM.mp4')
         self.bridge = CvBridge()
         self.cap = cv2.VideoCapture(file_path)
         self.pub = self.create_publisher(Image, "video_topic", 10)
