@@ -112,53 +112,56 @@ class WorldNode(Node):
 
         u = int(point_x)
         v = int(point_y)
-        depth = depth_frame[v][u]  # Access depth at (v, u) due to OpenCV array indexing
+        try:
+            depth = depth_frame[v][u]  # Access depth at (v, u) due to OpenCV array indexing
         
-        if depth != 0:
-            # Convert pixel coordinates to camera coordinates
-            image_center = [depth_msg.width / 2.0, depth_msg.height / 2.0]
-            focal_length = 381.98  # Focal length in pixels (example value)
-            camera_coords = self.pixel_to_camera_coordinates(u, v, depth, focal_length, image_center)
+            if depth != 0:
+                # Convert pixel coordinates to camera coordinates
+                image_center = [depth_msg.width / 2.0, depth_msg.height / 2.0]
+                focal_length = 381.98  # Focal length in pixels (example value)
+                camera_coords = self.pixel_to_camera_coordinates(u, v, depth, focal_length, image_center)
 
-            # Get transform from camera_link to base_link
-            try:
-                current_time = self.get_clock().now().to_msg()
-                transform = self.tf_buffer.lookup_transform('camera_link', 'camera_color_frame', rclpy.time.Time())
-                camera_position = np.array([transform.transform.translation.x,
-                                            transform.transform.translation.y,
-                                            transform.transform.translation.z])
-                camera_orientation = transform.transform.rotation
+                # Get transform from camera_link to base_link
+                try:
+                    current_time = self.get_clock().now().to_msg()
+                    transform = self.tf_buffer.lookup_transform('camera_color_frame','camera_link',  rclpy.time.Time())
+                    camera_position = np.array([transform.transform.translation.x,
+                                                transform.transform.translation.y,
+                                                transform.transform.translation.z])
+                    camera_orientation = transform.transform.rotation
 
-                # Convert quaternion to rotation matrix
-                R = self.quaternion_to_rotation_matrix(camera_orientation)
+                    # Convert quaternion to rotation matrix
+                    R = self.quaternion_to_rotation_matrix(camera_orientation)
 
-                # Transform camera coordinates to world coordinates
-                object_position_camera_frame = camera_coords
-                object_position_world_frame = np.dot(R, object_position_camera_frame) + camera_position
+                    # Transform camera coordinates to world coordinates
+                    object_position_camera_frame = camera_coords
+                    object_position_world_frame = np.dot(R, object_position_camera_frame) + camera_position
 
-                transform_stamped = TransformStamped()
-                transform_stamped.header.stamp = current_time
-                transform_stamped.header.frame_id = 'camera_color_frame'
-                transform_stamped.child_frame_id = 'person_link'
-                
-                # self.x = float("{:.3f}".format(object_position_world_frame[2] / 1000.0))
-                # self.y =  float("{:.3f}".format(object_position_world_frame[0] / 1000.0))
-                # self.z = float("{:.3f}".format(object_position_world_frame[1] / 1000.0))
-                
-                # For debugging
-                transform_stamped.transform.translation.x = float("{:.3f}".format(object_position_world_frame[2] / 1000.0))
-                transform_stamped.transform.translation.y = float("{:.3f}".format(object_position_world_frame[0] / 1000.0)) 
-                transform_stamped.transform.translation.z = float("{:.3f}".format(object_position_world_frame[1] / 1000.0))
-                
-                transform_stamped.transform.rotation.x = 0.0
-                transform_stamped.transform.rotation.y = 0.240207
-                transform_stamped.transform.rotation.z = 0.0
-                transform_stamped.transform.rotation.w = 0.74556
-                self.person_broadcaster.sendTransform(transform_stamped)
-                # self.get_logger().info('\033[93m depth {} : x:{} | y:{} | z:{}\033[0m'.format(depth, self.x, self.y, self.z))
+                    transform_stamped = TransformStamped()
+                    transform_stamped.header.stamp = current_time
+                    transform_stamped.header.frame_id = 'camera_color_frame'
+                    transform_stamped.child_frame_id = 'person_link'
+                    
+                    # self.x = float("{:.3f}".format(object_position_world_frame[2] / 1000.0))
+                    # self.y =  float("{:.3f}".format(object_position_world_frame[0] / 1000.0))
+                    # self.z = float("{:.3f}".format(object_position_world_frame[1] / 1000.0))
+                    
+                    # For debugging
+                    transform_stamped.transform.translation.x = float("{:.3f}".format(object_position_world_frame[2] / 1000.0))
+                    transform_stamped.transform.translation.y = float("{:.3f}".format(object_position_world_frame[0] / 1000.0)) 
+                    transform_stamped.transform.translation.z = float("{:.3f}".format(object_position_world_frame[1] / 1000.0))
+                    
+                    transform_stamped.transform.rotation.x = 0.0
+                    transform_stamped.transform.rotation.y = 0.240207
+                    transform_stamped.transform.rotation.z = 0.0
+                    transform_stamped.transform.rotation.w = 0.74556
+                    self.person_broadcaster.sendTransform(transform_stamped)
+                    # self.get_logger().info('\033[93m depth {} : x:{} | y:{} | z:{}\033[0m'.format(depth, self.x, self.y, self.z))
 
-            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-                self.get_logger().error(f"Failed to lookup transform: {e}")
+                except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+                    self.get_logger().error(f"Failed to lookup transform: {e}")
+        except:
+            self.get_logger().error(f'Depth index {u} * {v}')
 
     def pixel_to_camera_coordinates(self, u, v, depth, focal_length, image_center):
         z_camera = depth
