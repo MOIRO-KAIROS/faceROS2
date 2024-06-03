@@ -3,8 +3,4 @@ adaface_ros/adaface_ros/script/video/
 adaface_ros/adaface_ros/script/pretrained/
 **/.vscode/
 **/__pycache__/
-adaface_ros/adaface_ros/script/face_dataset/test/mincheol.jpg
-adaface_ros/adaface_ros/script/face_dataset/test/minha.jpg
-adaface_ros/adaface_ros/script/face_dataset/test/yeonju.jpg
-adaface_ros/adaface_ros/script/face_dataset/test/woosung.jpg
-adaface_ros/adaface_ros/script/face_dataset/test/hyunwoo.jpg
+adaface_ros/adaface_ros/script/face_dataset/test/*.jpg
