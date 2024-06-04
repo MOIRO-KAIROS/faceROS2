@@ -5,7 +5,7 @@ from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from moiro_interfaces.msg import DetectionArray, Detection, KeyPoint2DArray
 from moiro_interfaces.srv import Person, TargetPose
-from geometry_msgs.msg import PoseStamped, TransformStamped, Pose
+from geometry_msgs.msg import TransformStamped
 import transforms3d.quaternions as txq
 import numpy as np
 
@@ -61,7 +61,6 @@ class WorldNode(Node):
         self.target_server = self.create_service(TargetPose,'target_pose', self.target_setting, qos_profile=srv_qos_profile)
 
     def target_setting(self,req:TargetPose.Request, res: TargetPose.Response) -> TargetPose.Response:
-        # self.get_logger().info(f'{req.prepared}')
         if self.status == True:
             plate_tf = self.tf_buffer.lookup_transform('base_plate', 'person_link', rclpy.time.Time())
             res.x = float("{:.3f}".format(plate_tf.transform.translation.x))
@@ -69,7 +68,9 @@ class WorldNode(Node):
             res.z = float("{:.3f}".format(plate_tf.transform.translation.z))
             res.w = 1.0
             res.status = self.status
-            self.get_logger().info('\033[93m Sending: x : {}  y:  {}  z: {} w: 1.0\033[0m'.format(res.x,res.y,res.z)) 
+            self.get_logger().info('\033[93m [True] Sending : x : {}  y:  {}  z: {} \033[0m'.format(res.x,res.y,res.z))
+        else:
+            self.get_logger().info('\033[91m [False] Sending : x : {}  y:  {}  z: {} \033[0m'.format(res.x,res.y,res.z))
         return res
 
     def person_setting(self, req: Person.Request, res: Person.Response ) -> Person.Response:
@@ -96,7 +97,6 @@ class WorldNode(Node):
         point_x = 0
         point_y = 0
         detection: Detection
-        # self.get_logger().info('\033[93m ======================={}======================= \033[0m'.format(self.person_name))
         self.status = False
         for detection in face_detection_msg.detections:
             if detection.facebox.name == self.person_name:    
@@ -110,10 +110,10 @@ class WorldNode(Node):
         
         depth_frame = self.cv_bridge.imgmsg_to_cv2(depth_msg)
 
-        u = int(point_x)
-        v = int(point_y)
+        u = int(np.clip(point_x, 0, depth_msg.width - 1))
+        v = int(np.clip(point_y, 0, depth_msg.height - 1))
         try:
-            depth = depth_frame[v][u]  # Access depth at (v, u) due to OpenCV array indexing
+            depth = depth_frame[v][u]  # depth at (v, u) due to OpenCV array indexing
         
             if depth != 0:
                 # Convert pixel coordinates to camera coordinates
@@ -141,11 +141,7 @@ class WorldNode(Node):
                     transform_stamped.header.stamp = current_time
                     transform_stamped.header.frame_id = 'camera_color_frame'
                     transform_stamped.child_frame_id = 'person_link'
-                    
-                    # self.x = float("{:.3f}".format(object_position_world_frame[2] / 1000.0))
-                    # self.y =  float("{:.3f}".format(object_position_world_frame[0] / 1000.0))
-                    # self.z = float("{:.3f}".format(object_position_world_frame[1] / 1000.0))
-                    
+
                     # For debugging
                     transform_stamped.transform.translation.x = float("{:.3f}".format(object_position_world_frame[2] / 1000.0))
                     transform_stamped.transform.translation.y = float("{:.3f}".format(object_position_world_frame[0] / 1000.0)) 
@@ -156,7 +152,6 @@ class WorldNode(Node):
                     transform_stamped.transform.rotation.z = 0.0
                     transform_stamped.transform.rotation.w = 0.74556
                     self.person_broadcaster.sendTransform(transform_stamped)
-                    # self.get_logger().info('\033[93m depth {} : x:{} | y:{} | z:{}\033[0m'.format(depth, self.x, self.y, self.z))
 
                 except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
                     self.get_logger().error(f"Failed to lookup transform: {e}")
@@ -184,6 +179,3 @@ def main(args=None):
         node.get_logger().info('Keyboard interrupt, shutting down.\n')
     finally:
         rclpy.shutdown()
-
-if __name__ == '__main__':
-    main()

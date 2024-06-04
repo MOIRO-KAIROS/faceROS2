@@ -9,7 +9,7 @@ from rclpy.lifecycle import LifecycleNode
 from rclpy.lifecycle import TransitionCallbackReturn
 from rclpy.lifecycle import LifecycleState
 
-import cv2
+from ament_index_python.packages import get_package_share_directory
 import message_filters
 from cv_bridge import CvBridge
 
@@ -20,11 +20,12 @@ from sensor_msgs.msg._image import Image
 import numpy as np
 import sys
 import os
-from ament_index_python.packages import get_package_share_directory
+
 
 # get package share example : /home/minha/moiro_ws/install/adaface_ros/lib/adaface_ros/
-package_path = os.path.abspath(os.path.join(get_package_share_directory('adaface_ros'), "../../../../"))
-sys.path.append(os.path.join(package_path, "src/moiro_vision/adaface_ros/adaface_ros/script"))
+package_path = os.path.abspath(get_package_share_directory('adaface_ros')).split('install')[0]
+script_path = "src/moiro_vision/adaface_ros/adaface_ros/script"
+sys.path.append(os.path.join(package_path, script_path))
 
 from adaface_ros.script.adaface  import AdaFace
 
@@ -35,10 +36,6 @@ This Node subscribes datas from ~yolo/tracking_node~, publish data to ~yolo/debu
 class Adaface_ros(LifecycleNode):
     def __init__(self)-> None:
         super().__init__('adaface')
-
-        # self.get_logger().info('========================') 
-        # self.get_logger().info('Start face recognition!')
-        # self.get_logger().info('========================') 
 
         self.cv_bridge = CvBridge()
         self._face_cache = {}
@@ -53,7 +50,6 @@ class Adaface_ros(LifecycleNode):
         self.declare_parameter("video", 0)
         self.declare_parameter("image_reliability",
                                 QoSReliabilityPolicy.BEST_EFFORT)     
-
         self.get_logger().info("Face Recognition node created")
     
 
@@ -68,15 +64,14 @@ class Adaface_ros(LifecycleNode):
         self.dataset = self.get_parameter("dataset").get_parameter_value().string_value
         self.video = self.get_parameter("video").get_parameter_value().string_value
         
-        # self._penalty = {}
-        #pubs
+        # pubs
         self._adaface_pub = self.create_publisher(DetectionArray, 'adaface_msg',10)
 
         return TransitionCallbackReturn.SUCCESS
     
     def on_activate(self, state: LifecycleState) -> TransitionCallbackReturn:
         self.get_logger().info(f'Activating {self.get_name()}')
-        
+
         self.image_qos_profile = QoSProfile(
                 reliability=self.get_parameter(
                     "image_reliability").get_parameter_value().integer_value,
@@ -126,9 +121,7 @@ class Adaface_ros(LifecycleNode):
         return TransitionCallbackReturn.SUCCESS
   
     def adaface_main(self, img_msg: Image, detections_msg: DetectionArray) -> None:
-    
-        # convert image for align
-        # self.get_logger().info('adaface Main!!!') 
+
         cv_image = self.cv_bridge.imgmsg_to_cv2(img_msg)
 
         detection : Detection
@@ -144,10 +137,8 @@ class Adaface_ros(LifecycleNode):
             detection.bboxyolo.leftup = [x1, y1]
             detection.bboxyolo.rightbottom = [x2, y2]
             face_box, face_info = self.adaface.inference(cv_image[y1:y2,x1:x2])
-            #   face_box, face_info = None, None
 
-            if face_box: # 굳이 변환할 필요가 없지
-            # Assume that one person box = one face
+            if face_box: # Assume that one person box = one face
                 detection.facebox.bbox.leftup = [x1 + face_box[0][0] , y1 + face_box[0][1]]
                 detection.facebox.bbox.rightbottom = [x1 + face_box[0][2], y1 + face_box[0][3]]
                 
@@ -164,7 +155,7 @@ class Adaface_ros(LifecycleNode):
             if detection.facebox.name not in ["unknown", "no face"]:
                 if detection.id not in self._face_cache.keys() or self._face_cache[detection.id][0] in ["unknown", "no face"]:
                     self._face_cache[detection.id] = [detection.facebox.name, 0]
-                else: # penalty 주자 (minha != yeonju)
+                else: # penalty 증가 (minha != yeonju)
                     if self._face_cache[detection.id][0] != detection.facebox.name:
                         self._face_cache[detection.id][1] += 1
                     else: # 연속이 아니면 0으로 초기화
@@ -174,16 +165,14 @@ class Adaface_ros(LifecycleNode):
             else:
                 if detection.id not in self._face_cache.keys():
                     self._face_cache[detection.id] = [detection.facebox.name, 0]
-            # 실제 facebox.name을 반영 (dictionary 값을)
+            # dictionary 값을 실제 facebox.name을 반영
             detection.facebox.name = self._face_cache[detection.id][0]
             detections_msg.detections[n] = detection
         
-        # self.get_logger().info(f' dict : {self._face_cache}')
         self._adaface_pub.publish(detections_msg)
-        # self.get_logger().info('adaface detection publish!!!') 
 
-        keys_to_remove = [key for key in self._face_cache if key not in keys_to_keep]
         # 키 삭제
+        keys_to_remove = [key for key in self._face_cache if key not in keys_to_keep]
         for key in keys_to_remove:
             del self._face_cache[key]
 
@@ -196,6 +185,3 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
-
-# if __name__ == '__main__':
-#   main()

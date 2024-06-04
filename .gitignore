@@ -1,6 +1,6 @@
-adaface_ros/adaface_ros/script/embed/
 adaface_ros/adaface_ros/script/video/
 adaface_ros/adaface_ros/script/pretrained/
 **/.vscode/
 **/__pycache__/
-adaface_ros/adaface_ros/script/face_dataset/test/*.jpg
+adaface_ros/adaface_ros/script/face_dataset/test/images/*.jpg
+adaface_ros/adaface_ros/script/face_dataset/test/embed/*.pt

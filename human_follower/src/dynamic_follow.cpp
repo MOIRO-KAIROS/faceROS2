@@ -9,20 +9,23 @@
 #define F_VEL   0.05         // forward velocity
 
 struct HumanPose {
-    bool valid = false;
     std::tuple<double, double, double> goal; // (x, y, z) 좌표
+    bool valid = false;
 };
 
-geometry_msgs::msg::Twist velOutput;
+bool init_flag = true;
 
+geometry_msgs::msg::Twist velOutput;
 HumanPose p;
-// const double target_distance = 1.0; // 목표 거리 (예: 1미터)
 
 class HumanFollower : public rclcpp::Node {
 public:
     HumanFollower() : Node("human_follower"), MAX_DEPTH(1.5), MIN_DEPTH(1.0)  {
         RCLCPP_INFO(this->get_logger(), "Initialized node");
 
+        MIN_Y = -0.05;
+        MAX_Y = 0.05;
+        
         pub_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
         srv_client = this->create_client<moiro_interfaces::srv::TargetPose>("vision/target_pose");
         
@@ -43,8 +46,6 @@ public:
     }
 
 private:
-    double MAX_DEPTH;
-    double MIN_DEPTH;
     void depth_change(const std::shared_ptr<moiro_interfaces::srv::TargetDepth::Request> request,
                       std::shared_ptr<moiro_interfaces::srv::TargetDepth::Response> response) {
         MAX_DEPTH = request-> max_depth;
@@ -70,15 +71,20 @@ private:
             auto response = future.get();
             p.goal = std::make_tuple(response->x, response->y, response->z);
             p.valid = true;
-            RCLCPP_INFO(this->get_logger(), "Lost Human: %d", (response->status));
 
-            RCLCPP_INFO(this->get_logger(), "Target Pose: x=%f, y=%f, z=%f", std::get<0>(p.goal), std::get<1>(p.goal), std::get<2>(p.goal));
-
-            if (p.valid && response->status) {
+            if (response->status) {
+                RCLCPP_INFO(this->get_logger(), "\033[93mI DETECT HUMAN\033[0m");
+                RCLCPP_INFO(this->get_logger(), "Target Pose: x=%f, y=%f, z=%f", std::get<0>(p.goal), std::get<1>(p.goal), std::get<2>(p.goal));
                 GettingHuman();
+                if (init_flag){
+                    init_flag = false;
+                }
             } else {
+                if (!init_flag)
+                    RCLCPP_ERROR(this->get_logger(), "I LOST HUMAN");
                 LostHuman();
             }
+
             p.valid = false;
         } catch (const std::exception &e) {
             p.valid = false;
@@ -88,14 +94,13 @@ private:
     }
 
     void GettingHuman() {
-        RCLCPP_INFO(this->get_logger(), "I DETECT HUMAN");
         double person_x = std::get<0>(p.goal);
         double person_y = std::get<1>(p.goal);
 
         // 로봇의 회전 제어: y 값을 사용하여 카메라 중앙에 정렬
-        if (person_y < -0.05)
+        if (person_y < MIN_Y) // -0.05
             velOutput.angular.z = - R_VEL;
-        else if (person_y > 0.05)
+        else if (person_y > MAX_Y) // 0.05
             velOutput.angular.z = R_VEL;
         else
             velOutput.angular.z = 0;
@@ -114,12 +119,10 @@ private:
             velOutput.linear.x = 0;
         }
         
-        // RCLCPP_INFO(this->get_logger(), "linear - x : %f  angular - z: %f ", velOutput.linear.x, velOutput.angular.z );
         pub_->publish(velOutput);
     }
 
     void LostHuman() {
-        RCLCPP_ERROR(this->get_logger(), "I LOST HUMAN");
         velOutput.linear.x = 0;
         velOutput.angular.z = 0;
         pub_->publish(velOutput);
@@ -129,6 +132,10 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Service<moiro_interfaces::srv::TargetDepth>::SharedPtr srv_depth;
+    double MAX_DEPTH;
+    double MIN_DEPTH;
+    double MAX_Y;
+    double MIN_Y;
 };
 
 int main(int argc, char **argv) {

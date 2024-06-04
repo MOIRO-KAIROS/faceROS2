@@ -46,7 +46,6 @@ def generate_launch_description():
             '== 1',
             ])))
 
-    # Node: face_recognition
     face_recognition_node = Node(
         package="adaface_ros",
         executable="face_recognition",
@@ -69,7 +68,6 @@ def generate_launch_description():
         output='screen',
     )
 
-    # Node: video_publisher
     video_publisher_node = Node(
         package="adaface_ros",
         executable="video_publisher",
@@ -134,5 +132,5 @@ def generate_launch_description():
     # Add actions to launch description
     [ld.add_action(action) for action in launch_arguments]
     [ld.add_action(action) for action in [webcam_topic_cmd, video_topic_cmd]]
-    [ld.add_action(action) for action in [realsense_launch_cmd,video_publisher_node, yolov8_launch_cmd, face_recognition_node, world_node_cmd]] #
+    [ld.add_action(action) for action in [realsense_launch_cmd, video_publisher_node, yolov8_launch_cmd, face_recognition_node, world_node_cmd]] #
     return ld

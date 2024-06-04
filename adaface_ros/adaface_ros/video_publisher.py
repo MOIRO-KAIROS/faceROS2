@@ -6,13 +6,16 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from ament_index_python.packages import get_package_share_directory
 
+package_path = os.path.abspath(get_package_share_directory('adaface_ros')).split('install')[0]
+
 class ImagePublisher(Node):
     def __init__(self):
         super().__init__("image_publisher")
-        package_path = os.path.abspath(os.path.join(get_package_share_directory('adaface_ros'), "../../../../"))
-        file_path = os.path.join(package_path,'src/moiro_vision/adaface_ros/adaface_ros/script/video/iAM.mp4')
+        
         self.bridge = CvBridge()
-        self.cap = cv2.VideoCapture(file_path)
+
+        video_path = os.path.join(package_path, video_path)
+        self.cap = cv2.VideoCapture(video_path)
         self.pub = self.create_publisher(Image, "video_topic", 10)
 
     def run(self):
@@ -28,12 +31,9 @@ class ImagePublisher(Node):
 
 def main(args=None):
     rclpy.init(args=None)
-    ip = ImagePublisher()
+    image_pub = ImagePublisher()
     print("Publishing...")
-    ip.run()
+    image_pub.run()
 
-    ip.destroy_node()
+    image_pub.destroy_node()
     rclpy.shutdown()
-
-if __name__ == '__main__':
-    main()

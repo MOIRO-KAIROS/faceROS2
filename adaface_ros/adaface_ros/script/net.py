@@ -9,7 +9,6 @@ from torch.nn import BatchNorm1d, BatchNorm2d
 from torch.nn import ReLU, Sigmoid
 from torch.nn import Module
 from torch.nn import PReLU
-import os
 
 def build_model(model_name='ir_50'):
     if model_name == 'ir_101':

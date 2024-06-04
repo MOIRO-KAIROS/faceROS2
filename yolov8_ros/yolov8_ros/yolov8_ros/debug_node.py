@@ -104,13 +104,9 @@ class DebugNode(LifecycleNode):
 
         # draw face box
         if detection.facebox.isdetect: # 얼굴 좌표가 없다 = 얼굴 이름도 없다 하지만 바운딩박스의 이름은 array 있으면 찾을 수 있다.
-            # self.get_logger().info('\033[93m =================================================== \033[0m')
-            # self.get_logger().info('\033[93m 얼굴 좌표 있을 때: {}  \033[0m'.format(detection)) # For Debugging
-            # self.get_logger().info('\033[93m =================================================== \033[0m')
-            
             cv2.rectangle(cv_image, detection.facebox.bbox.leftup, detection.facebox.bbox.rightbottom, (255,255,255), 2)
 
-        # write text
+        # write face's name
         font = cv2.FONT_HERSHEY_COMPLEX
         pos = (detection.bboxyolo.leftup[0] + 25, detection.bboxyolo.rightbottom[1] - 25)
         
@@ -149,11 +145,6 @@ class DebugNode(LifecycleNode):
         kp: KeyPoint2D
         cnt = 0
         for kp in keypoints_msg.data:
-            # color_k = [int(x) for x in ann.kpt_color[kp.id - 1]
-            #            ] if len(keypoints_msg.data) == 17 else colors(kp.id - 1)
-
-            # cv2.circle(cv_image, (int(kp.point.x), int(kp.point.y)),
-            #            5, color_k, -1, lineType=cv2.LINE_AA)
             #### Shoulder middle point!
             if str(kp.id) == '7' or str(kp.id) == '6':
                 cnt+=1
@@ -168,29 +159,14 @@ class DebugNode(LifecycleNode):
 
 
     def detections_cb(self, img_msg: Image, face_detection_msg: DetectionArray) -> None:
-        # start = time.time()
-        # self.get_logger().info(f"{img_msg.height} {img_msg.width}")
-
         cv_image = self.cv_bridge.imgmsg_to_cv2(img_msg,"rgb8")
         detection: Detection
-        # cv2.circle(cv_image, (50, 50),
-        #                10, (255,0,0), -1, lineType=cv2.LINE_AA)
-        # person_center = DetectionInfo()
-        # person_center.header = face_detection_msg.header
-        # person_center.x = float(50)
-        # person_center.y = float(50)
-        # person_center.name = 'hello'
-        # self._center_pub.publish(person_center)      
         for detection in face_detection_msg.detections:
             cv_image, sh_point = self.draw_keypoints(cv_image, detection)
             cv_image = self.draw_box(cv_image, detection)
             
         # publish dbg image
         self._dbg_pub.publish(self.cv_bridge.cv2_to_imgmsg(cv_image, encoding=img_msg.encoding))
-
-        # end = time.time()
-        # self.get_logger().info(f"\033[93m >>>>>>>>>>>>>>>>>>>>>>>>>> {end - start:.5f} sec >>>>>>>>>>>>>>>>>>>>>>>>>> \033[0m")
-
 
 
 def main():

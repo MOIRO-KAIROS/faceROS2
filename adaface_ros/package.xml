@@ -15,7 +15,6 @@
   <depend>rclpy</depend>
   <depend>moiro_interfaces</depend>
   <depend>yolov8_ros</depend>
-
   <depend>sensor_msgs</depend>
   <depend>cv_bridge</depend>
   
