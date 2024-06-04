@@ -107,6 +107,9 @@ class AdaFace():
         # print(features.shape)
         torch.save(features, os.path.join(sys_path, 'embed/features.pt'))
         torch.save(ids, os.path.join(sys_path, 'embed/ids.pt'))
+        with open(os.path.join(sys_path, "embed/ids.txt"), 'w') as file:
+            for id in ids:
+                file.write(str(id) + '\n')
         print(f"얼굴 임베딩 벡터 저장 완료(known face 개수: {len(ids)})")
         return features, ids
 
