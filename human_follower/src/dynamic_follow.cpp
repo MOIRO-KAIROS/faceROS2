@@ -71,12 +71,12 @@ private:
             p.valid = true;
 
             if (response->status) {
-                RCLCPP_INFO(this->get_logger(), "\033[93mI DETECT HUMAN\033[0m");
-                RCLCPP_INFO(this->get_logger(), "Target Pose: x=%f, y=%f, z=%f", std::get<0>(p.goal), std::get<1>(p.goal), std::get<2>(p.goal));
                 GettingHuman();
                 if (init_flag){
                     init_flag = false;
                 }
+                RCLCPP_INFO(this->get_logger(), "Target Pose: x=%.3f, y=%.3f, z=%.3f", 
+                            std::get<0>(p.goal), std::get<1>(p.goal), std::get<2>(p.goal));
             } else {
                 if (!init_flag)
                     RCLCPP_ERROR(this->get_logger(), "I LOST HUMAN");
@@ -108,15 +108,15 @@ private:
         double speed = F_VEL * distance_ratio; 
 
         if (person_x > MAX_DEPTH) {
-            RCLCPP_INFO(this->get_logger(), "FORWARD");
+            RCLCPP_INFO(this->get_logger(), "\033[93mFORWARD\033[0m");
             velOutput.linear.x = speed;
         }
         else if (person_x < MIN_DEPTH) {
-            RCLCPP_INFO(this->get_logger(), "BACKWARD");
+            RCLCPP_INFO(this->get_logger(), "\033[93mBACKWARD\033[0m");
             velOutput.linear.x = speed;
         }
         else {
-            RCLCPP_INFO(this->get_logger(), "STOP");
+            RCLCPP_INFO(this->get_logger(), "\033[93mSTOP\033[0m");
             velOutput.linear.x = 0;
         }
         
