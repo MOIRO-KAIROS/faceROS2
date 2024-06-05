@@ -97,7 +97,10 @@ class AdaFace():
 
         torch.save(features, os.path.join(embed_path, 'features.pt'))
         torch.save(ids, os.path.join(embed_path, 'ids.pt'))
-        with open(os.path.join(embed_path, "ids.txt"), 'w') as file:
+        embed_path_for_web = os.path.join(os.path.expanduser("~"), "moiro_ws/moiro_testTool/moiro_web/embed")
+        if not os.path.exists(embed_path_for_web):
+            os.makedirs(embed_path_for_web)
+        with open(os.path.join(embed_path_for_web, f"{os.path.basename(self.dataset)}.txt"), 'w') as file:
             for id in ids:
                 file.write(str(id) + '\n')
         print(f"얼굴 임베딩 벡터 저장 완료(known face 개수: {len(ids)})")
