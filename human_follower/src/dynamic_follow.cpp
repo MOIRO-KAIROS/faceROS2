@@ -6,7 +6,9 @@
 #include <moiro_interfaces/srv/target_depth.hpp>
 
 #define R_VEL   0.05         // rotate velocity
-#define F_VEL   0.05         // forward velocity
+#define F_VEL   0.07         // forward velocity (modified check please)
+#define MIN_Y  -0.05        // min y value                                                                                                                                                                                          
+#define MAX_Y   0.05        // max y value
 
 struct HumanPose {
     std::tuple<double, double, double> goal; // (x, y, z) 좌표
@@ -22,10 +24,6 @@ class HumanFollower : public rclcpp::Node {
 public:
     HumanFollower() : Node("human_follower"), MAX_DEPTH(1.5), MIN_DEPTH(1.0)  {
         RCLCPP_INFO(this->get_logger(), "Initialized node");
-
-        MIN_Y = -0.05;
-        MAX_Y = 0.05;
-        
         pub_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
         srv_client = this->create_client<moiro_interfaces::srv::TargetPose>("vision/target_pose");
         
@@ -106,13 +104,16 @@ private:
             velOutput.angular.z = 0;
         
         // 로봇의 전진/후진 제어: x 값을 사용하여 특정 거리 유지
+        double distance_ratio = std::min(std::max((person_x - MIN_DEPTH) / (MAX_DEPTH - MIN_DEPTH), -1.0), 1.0);
+        double speed = F_VEL * distance_ratio; 
+
         if (person_x > MAX_DEPTH) {
             RCLCPP_INFO(this->get_logger(), "FORWARD");
-            velOutput.linear.x = F_VEL;
+            velOutput.linear.x = speed;
         }
         else if (person_x < MIN_DEPTH) {
             RCLCPP_INFO(this->get_logger(), "BACKWARD");
-            velOutput.linear.x = -F_VEL;
+            velOutput.linear.x = speed;
         }
         else {
             RCLCPP_INFO(this->get_logger(), "STOP");
@@ -134,8 +135,6 @@ private:
     rclcpp::Service<moiro_interfaces::srv::TargetDepth>::SharedPtr srv_depth;
     double MAX_DEPTH;
     double MIN_DEPTH;
-    double MAX_Y;
-    double MIN_Y;
 };
 
 int main(int argc, char **argv) {
