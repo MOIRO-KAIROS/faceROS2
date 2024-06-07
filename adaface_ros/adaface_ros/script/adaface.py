@@ -15,7 +15,7 @@ sys_path = os.path.join(package_path, "src/moiro_vision/adaface_ros/adaface_ros/
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-torch.set_grad_enabled(False) # for 메모리
+# torch.set_grad_enabled(True) # for 메모리
 
 adaface_models = {
     'ir_50': os.path.join(sys_path, "pretrained/adaface_ir50_ms1mv2.ckpt"),
