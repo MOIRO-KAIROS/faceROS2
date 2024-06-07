@@ -5,7 +5,7 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <moiro_interfaces/srv/target_depth.hpp>
 
-#define R_VEL   0.05         // rotate velocity
+#define R_VEL   0.08         // rotate velocity
 #define F_VEL   0.07         // forward velocity (modified check please)
 #define MIN_Y  -0.05        // min y value                                                                                                                                                                                          
 #define MAX_Y   0.05        // max y value
@@ -98,15 +98,15 @@ private:
 
         // 로봇의 회전 제어: y 값을 사용하여 카메라 중앙에 정렬
         if (person_y < MIN_Y) // -0.05
-            velOutput.angular.z = - R_VEL;
+            {velOutput.angular.z = - R_VEL;
+            RCLCPP_INFO(this->get_logger(), "\033[93mRIGHT\033[0m");}
         else if (person_y > MAX_Y) // 0.05
-            velOutput.angular.z = R_VEL;
+            {velOutput.angular.z = R_VEL;
+            RCLCPP_INFO(this->get_logger(), "\033[93mLEFT\033[0m");}    
         else
             velOutput.angular.z = 0;
         
-        // 로봇의 전진/후진 제어: x 값을 사용하여 특정 거리 유지
-        double distance_ratio = std::min(std::max((person_x - MIN_DEPTH) / (MAX_DEPTH - MIN_DEPTH), -1.0), 1.0);
-        double speed = F_VEL * distance_ratio; 
+        // 로봇의 전진/후진 제어: x 값을 사용하여 특정 거리 유지 
 
         if (person_x > MAX_DEPTH) {
             RCLCPP_INFO(this->get_logger(), "\033[93mFORWARD\033[0m");
@@ -120,8 +120,6 @@ private:
             RCLCPP_INFO(this->get_logger(), "\033[93mSTOP\033[0m");
             velOutput.linear.x = 0;
         }
-
-        RCLCPP_INFO(this->get_logger(), "vel: %f", velOutput.linear.x);
         pub_->publish(velOutput);
     }
 
