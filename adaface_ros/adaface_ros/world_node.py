@@ -41,7 +41,8 @@ class WorldNode(Node):
 
         self.declare_parameter("person_name", 'Unintialized')
         self.person_name = self.get_parameter("person_name").get_parameter_value().string_value
-
+        
+        self.get_logger().info("World node created")
         self.get_logger().info('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') 
         self.get_logger().info(f'The Person Who You Want To Detect Is {self.person_name} !!!!')
         self.get_logger().info('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')

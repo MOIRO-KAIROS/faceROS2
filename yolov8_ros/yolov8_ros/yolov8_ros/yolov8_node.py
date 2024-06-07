@@ -59,7 +59,7 @@ class Yolov8Node(LifecycleNode):
         self.declare_parameter("image_reliability",
                                QoSReliabilityPolicy.BEST_EFFORT)
 
-        self.get_logger().info('Yolov8Node created')
+        self.get_logger().info('Yolov8 node created')
 
     def on_configure(self, state: LifecycleState) -> TransitionCallbackReturn:
         self.get_logger().info(f'Configuring {self.get_name()}')
@@ -101,7 +101,7 @@ class Yolov8Node(LifecycleNode):
         return response
 
     def on_activate(self, state: LifecycleState) -> TransitionCallbackReturn:
-        self.get_logger().info(f'Activating {self.get_name()}')
+        # self.get_logger().info(f'Activating {self.get_name()}')
 
         self.yolo = YOLO(self.model)
         self.yolo.fuse()

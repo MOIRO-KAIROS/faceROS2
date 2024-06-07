@@ -52,7 +52,7 @@ class DebugNode(LifecycleNode):
         self.get_logger().info("Debug node created")
 
     def on_configure(self, state: LifecycleState) -> TransitionCallbackReturn:
-        self.get_logger().info(f'Configuring {self.get_name()}')
+        # self.get_logger().info(f'Configuring {self.get_name()}')
 
         self.image_qos_profile = QoSProfile(
             reliability=self.get_parameter(
@@ -67,7 +67,7 @@ class DebugNode(LifecycleNode):
         return TransitionCallbackReturn.SUCCESS
         
     def on_activate(self, state: LifecycleState) -> TransitionCallbackReturn:
-        self.get_logger().info(f'Activating {self.get_name()}')
+        # self.get_logger().info(f'Activating {self.get_name()}')
         
         # subs
         image_sub = message_filters.Subscriber(

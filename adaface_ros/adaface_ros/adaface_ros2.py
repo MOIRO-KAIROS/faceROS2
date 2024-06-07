@@ -70,7 +70,7 @@ class Adaface_ros(LifecycleNode):
         return TransitionCallbackReturn.SUCCESS
     
     def on_activate(self, state: LifecycleState) -> TransitionCallbackReturn:
-        self.get_logger().info(f'Activating {self.get_name()}')
+        # self.get_logger().info(f'Activating {self.get_name()}')
 
         self.image_qos_profile = QoSProfile(
                 reliability=self.get_parameter(

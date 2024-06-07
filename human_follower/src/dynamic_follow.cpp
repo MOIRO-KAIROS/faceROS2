@@ -9,6 +9,7 @@
 #define F_VEL   0.07         // forward velocity (modified check please)
 #define MIN_Y  -0.05        // min y value                                                                                                                                                                                          
 #define MAX_Y   0.05        // max y value
+#define SPACE  0.9         // space value
 
 struct HumanPose {
     std::tuple<double, double, double> goal; // (x, y, z) 좌표
@@ -109,17 +110,18 @@ private:
 
         if (person_x > MAX_DEPTH) {
             RCLCPP_INFO(this->get_logger(), "\033[93mFORWARD\033[0m");
-            velOutput.linear.x = speed;
+            velOutput.linear.x = std::min((person_x - MAX_DEPTH) / SPACE, F_VEL);
         }
         else if (person_x < MIN_DEPTH) {
             RCLCPP_INFO(this->get_logger(), "\033[93mBACKWARD\033[0m");
-            velOutput.linear.x = speed;
+            velOutput.linear.x = std::max((person_x - MIN_DEPTH) / SPACE, -F_VEL);
         }
         else {
             RCLCPP_INFO(this->get_logger(), "\033[93mSTOP\033[0m");
             velOutput.linear.x = 0;
         }
-        
+
+        RCLCPP_INFO(this->get_logger(), "vel: %f", velOutput.linear.x);
         pub_->publish(velOutput);
     }
 

@@ -51,9 +51,10 @@ class TrackingNode(LifecycleNode):
                                QoSReliabilityPolicy.BEST_EFFORT)
 
         self.cv_bridge = CvBridge()
+        self.get_logger().info("Tracking node created")
 
     def on_configure(self, state: LifecycleState) -> TransitionCallbackReturn:
-        self.get_logger().info(f'Configuring {self.get_name()}')
+        # self.get_logger().info(f'Configuring {self.get_name()}')
 
         tracker_name = self.get_parameter(
             "tracker").get_parameter_value().string_value
@@ -67,7 +68,7 @@ class TrackingNode(LifecycleNode):
         return TransitionCallbackReturn.SUCCESS
 
     def on_activate(self, state: LifecycleState) -> TransitionCallbackReturn:
-        self.get_logger().info(f'Activating {self.get_name()}')
+        # self.get_logger().info(f'Activating {self.get_name()}')
 
         image_qos_profile = QoSProfile(
             reliability=self.image_reliability,
