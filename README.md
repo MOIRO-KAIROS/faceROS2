@@ -58,17 +58,13 @@ https://github.com/mk-minchul/AdaFace
 ```
 python3 -m venv py310
 source py310/bin/activate
+## If not operated properly, follow below command !
+#echo 'export PYTHONPATH=$HOME/py310/lib64/python3.10/site-packages/:$PYTHONPATH' >> ~/.bashrc
+#echo 'export PYTHONPATH=$HOME/py310/lib/python3.10/site-packages:$PYTHONPATH' >> ~/.bashrc
 ```
 ```
-# When not using requirement.txt
-
-pip install pyyaml
-pip install typeguard
+# Install pytorch
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-pip install scikit-image matplotlib pandas scikit-learn
-pip install pytorch pytorch-lightning==1.8.6
-pip install tqdm bcolz-zipline prettytable menpo mxnet opencv-python
-pip install -U colcon-common-extensions
 ```
 ```
 pip list | grep torch
