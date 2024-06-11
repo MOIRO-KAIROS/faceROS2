@@ -12,13 +12,15 @@ import numpy as np
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 import tf2_ros
 from rclpy.executors import MultiThreadedExecutor
+from builtin_interfaces.msg import Duration
 
 class WorldNode(Node):
 
     def __init__(self):
         super().__init__('world_node')
 
-        self.tf_buffer = tf2_ros.Buffer()
+        cache_time = Duration(sec=5)
+        self.tf_buffer = tf2_ros.Buffer(cache_time=cache_time)
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
         self.cv_bridge = CvBridge()
 
