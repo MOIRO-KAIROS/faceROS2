@@ -39,7 +39,7 @@ def generate_launch_description():
     
     video_topic_cmd = DeclareLaunchArgument(
         "input_image_topic",
-        default_value="/adaface/video_topic",
+        default_value="/vision/video_topic",
         description="Name of the input image topic",
         condition = IfCondition(PythonExpression([
             LaunchConfiguration("video"),
@@ -94,7 +94,9 @@ def generate_launch_description():
             ("depth_image", "/camera/camera/depth/image_rect_raw"),
             ("detections", "/vision/adaface_msg")
         ],
-        condition=IfCondition(PythonExpression([LaunchConfiguration("option"), '== 1']))
+        condition=IfCondition(PythonExpression([
+                '(', LaunchConfiguration("video"), ' == 0) and (', LaunchConfiguration("option"), ' == 1)'
+        ]))
     )
 
     # Include launch descriptions
@@ -122,8 +124,9 @@ def generate_launch_description():
             ('person_name',LaunchConfiguration('person_name')),
         ],
         condition=IfCondition(PythonExpression([
-                '(', LaunchConfiguration("video"), ' == 0) and (', LaunchConfiguration("option"), ' == 1)'
-            ]))
+            LaunchConfiguration("option"),
+            '== 1',
+        ]))
     )
 
     # Construct launch description

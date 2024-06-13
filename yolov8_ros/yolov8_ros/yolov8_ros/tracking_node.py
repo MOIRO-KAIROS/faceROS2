@@ -84,7 +84,7 @@ class TrackingNode(LifecycleNode):
             self, DetectionArray, "detections", qos_profile=10)
 
         self._synchronizer = message_filters.ApproximateTimeSynchronizer(
-            (image_sub, detections_sub), 100, 0.1)
+            (image_sub, detections_sub), 100, 0.01)
         self._synchronizer.registerCallback(self.detections_cb)
 
         return TransitionCallbackReturn.SUCCESS

@@ -13,8 +13,7 @@ class ImagePublisher(Node):
         super().__init__("image_publisher")
         
         self.bridge = CvBridge()
-
-        video_path = os.path.join(package_path, video_path)
+        video_path = os.path.join(package_path, 'src/moiro_vision/adaface_ros/adaface_ros/script/video/video.mp4')
         self.cap = cv2.VideoCapture(video_path)
         self.pub = self.create_publisher(Image, "video_topic", 10)
 
@@ -22,10 +21,11 @@ class ImagePublisher(Node):
         while(self.cap.isOpened()):
             ret, frame = self.cap.read() 
             if ret:
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
                 self.pub.publish(self.bridge.cv2_to_imgmsg(frame,"rgb8"))
             else:
                 self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            time.sleep(1/60) 
+            time.sleep(1/10) 
 
         self.cap.release()
 

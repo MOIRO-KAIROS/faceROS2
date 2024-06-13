@@ -91,7 +91,7 @@ class Adaface_ros(LifecycleNode):
         
         ## subs
         tracking_sub = message_filters.Subscriber(
-            self, DetectionArray, "detections", qos_profile =10)
+            self, DetectionArray, "detections", qos_profile=10)
         image_sub = message_filters.Subscriber(
             self, Image, "image_raw", qos_profile=self.image_qos_profile)
 
