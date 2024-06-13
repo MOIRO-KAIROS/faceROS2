@@ -1,5 +1,7 @@
-# moiro_vision using Adaface and YOLOv8
-#### This repo is designed to implement real-time face recognition in ROS2
+# MOIRO VISION
+- ROS2 Humble Packages for MOIRO vision
+- This repo is designed to implement real-time face recognition in ROS2
+- 해당 프로젝트는 Moiro 사용시 실시간으로 얼굴 인식과 객체 추적을 통해 타겟의 3D 좌표를 발행하기 위해 제작되었습니다.
 ##### [ Ubuntu 22.04 ROS2 humble ver. ]
 ## 0. YOLOv8_ros
 https://github.com/mgonzs13/yolov8_ros
